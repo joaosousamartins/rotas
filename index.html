@@ -21,20 +21,12 @@
             --accent-secondary-hover: #6B7280;
             --border-color: #4B5563;
             --shadow-color: rgba(0, 0, 0, 0.5);
-            --radius-md: 0.5rem; /* 8px */
-            --radius-lg: 0.75rem; /* 12px */
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            color-scheme: dark;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { color-scheme: dark; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
@@ -64,23 +56,15 @@
             font-weight: 700;
         }
 
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+        .login-form { display: flex; flex-direction: column; gap: 1rem; }
 
-        .form-group {
-            text-align: left;
-        }
-
+        .form-group { text-align: left; }
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
-
         .form-group input {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -91,11 +75,7 @@
             font-size: 1rem;
             transition: border-color 0.3s;
         }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
+        .form-group input:focus { outline: none; border-color: var(--accent-primary); }
 
         .login-button {
             width: 100%;
@@ -110,10 +90,7 @@
             transition: background-color 0.3s;
             margin-top: 1rem;
         }
-
-        .login-button:hover {
-            background-color: var(--accent-primary-hover);
-        }
+        .login-button:hover { background-color: var(--accent-primary-hover); }
 
         .message {
             margin-top: 1rem;
@@ -121,12 +98,18 @@
             color: #EF4444; /* Cor vermelha para erro */
             display: none;
         }
+
+        .hint {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h1>Entrar na sua conta</h1>
-        <form class="login-form" id="loginForm">
+        <form class="login-form" id="loginForm" autocomplete="off">
             <div class="form-group">
                 <label for="username">Nome de Usuário</label>
                 <input type="text" id="username" name="username" required>
@@ -137,30 +120,54 @@
             </div>
             <p class="message" id="errorMessage">Usuário ou senha incorretos. Tente novamente.</p>
             <button type="submit" class="login-button">Entrar</button>
+            <p class="hint">Exemplo de utilizadores: <strong>joao</strong> / 1437</p>
         </form>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Impede o envio padrão do formulário
+        // Lista fixa de usuários (o método mais simples)
+        const users = [
+            { username: 'joao', password: '1437' },
+            { username: 'maria', password: 'abcd' },
+            { username: 'ana', password: '1111' }
+        ];
 
-            const username = document.getElementById('username').value;
+        const targetPage = 'rotas.html'; // página destino
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
 
-            // Define o usuário e a senha corretos
-            const correctUsername = 'joao';
-            const correctPassword = '1437';
-            const targetPage = 'rotas.html'; // Mude para o nome do seu arquivo de rotas
+            // Procura o utilizador na lista
+            const found = users.find(u => u.username === username && u.password === password);
 
-            if (username === correctUsername && password === correctPassword) {
-                // Credenciais corretas: redireciona para a página de rotas
+            if (found) {
+                // Guarda o utilizador logado no sessionStorage (apenas para a sessão atual)
+                sessionStorage.setItem('loggedUser', username);
+                // Redireciona para a página de rotas
                 window.location.href = targetPage;
             } else {
-                // Credenciais incorretas: mostra a mensagem de erro
+                // Mostra mensagem de erro
                 errorMessage.style.display = 'block';
+                // Oculta a mensagem ao inserir algo novo
+                setTimeout(() => {
+                    const inputs = [document.getElementById('username'), document.getElementById('password')];
+                    inputs.forEach(i => i.addEventListener('input', () => { errorMessage.style.display = 'none'; }));
+                }, 0);
             }
         });
+
+        // Se já estiver logado, redireciona direto (opcional)
+        (function redirectIfAlreadyLogged() {
+            const logged = sessionStorage.getItem('loggedUser');
+            if (logged) {
+                // Descomenta a linha abaixo se quiseres que usuários já logados sejam automaticamente enviados a rotas.html
+                // window.location.href = targetPage;
+            }
+        })();
     </script>
 </body>
 </html>
