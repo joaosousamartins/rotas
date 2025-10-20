@@ -1,174 +1,393 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - GPX Metropolitana</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Estilos baseados na sua página de rotas */
-        :root {
-            --bg-primary: #111827;
-            --bg-secondary: #1F2937;
-            --bg-tertiary: #374151;
-            --text-primary: #F9FAFB;
-            --text-secondary: #9CA3AF;
-            --accent-primary: #3B82F6;
-            --accent-primary-hover: #2563EB;
-            --accent-secondary: #4B5563;
-            --accent-secondary-hover: #6B7280;
-            --border-color: #4B5563;
-            --shadow-color: rgba(0, 0, 0, 0.5);
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotas Carris Metropolitana</title>
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { color-scheme: dark; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 1rem;
-        }
+<!-- Fonts e ícones -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=my_location" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=flag_2" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        .login-container {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 4px 12px var(--shadow-color);
-            max-width: 400px;
-            width: 100%;
-            padding: 2.5rem;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
 
-        .login-container h1 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent-primary);
-            font-weight: 700;
-        }
+<style>
+:root {
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-color: #ffdd00;
+  --success-color: #28a745;
+  --success-hover-color: #218838;
+  --background-color: #f0f2f5;
+  --card-background-color: #ffffff;
+  --text-color: #333;
+  --text-light-color: #6c757d;
+  --border-color: #dee2e6;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  --font-family: 'Inter', sans-serif;
+}
 
-        .login-form { display: flex; flex-direction: column; gap: 1rem; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-        .form-group { text-align: left; }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus { outline: none; border-color: var(--accent-primary); }
+body {
+  font-family: var(--font-family);
+  background: var(--background-color);
+  color: var(--text-color);
+  padding: 20px 15px;
+  line-height: 1.6;
+}
 
-        .login-button {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            background-color: var(--accent-primary);
-            color: var(--text-primary);
-            border-radius: var(--radius-md);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 1rem;
-        }
-        .login-button:hover { background-color: var(--accent-primary-hover); }
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
 
-        .message {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #EF4444; /* Cor vermelha para erro */
-            display: none;
-        }
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-color);
+  font-weight: 700;
+  font-size: 2.25rem;
+}
 
-        .hint {
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-    </style>
+.search-container {
+  background: var(--card-background-color);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 30px;
+}
+
+.search-container p {
+  text-align: center;
+  color: var(--text-light-color);
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 15px;
+}
+
+#linha {
+  flex-grow: 1;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#linha:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+  background: var(--primary-hover-color);
+}
+
+.line-info-card {
+    display: none;
+    background: var(--card-background-color);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-align: center;
+    border-left: 5px solid var(--primary-color);
+    box-shadow: var(--box-shadow);
+}
+
+#patterns {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.pattern-box {
+  background: var(--card-background-color);
+  border: 1px solid var(--border-color);
+  border-left: 5px solid var(--secondary-color);
+  border-radius: 8px;
+  padding: 20px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pattern-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow);
+}
+
+.pattern-box span {
+    flex-grow: 1;
+}
+
+.gpx-btn {
+  background: var(--success-color);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.gpx-btn:hover {
+    background: var(--success-hover-color);
+}
+
+#map {
+  height: 500px;
+  width: 100%;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.map-buttons {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  gap: 5px;
+}
+
+.map-buttons button {
+  background: var(--card-background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.map-buttons button:hover {
+    background: #f8f9fa;
+    color: var(--text-color);
+}
+
+
+/* --- CSS OTIMIZADO PARA TELEMÓVEIS --- */
+@media (max-width: 600px) {
+  body {
+    padding: 15px 10px;
+  }
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+  .search-container {
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+  .search-bar {
+    flex-direction: column;
+  }
+
+  /* Card de informação da linha mais compacto */
+  .line-info-card {
+    padding: 15px;
+    font-size: 1rem;
+    margin-bottom: 25px;
+  }
+
+  /* Cards de destino mais compactos */
+  .pattern-box {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 15px;
+    font-size: 0.95rem;
+  }
+  
+  /* Botão de download ajustado */
+  .gpx-btn {
+      align-self: flex-end;
+      padding: 7px 12px;
+      font-size: 0.8rem;
+  }
+
+  /* Mapa em destaque, com altura fixa para ser o elemento principal */
+  #map {
+    height: 350px;
+  }
+}
+</style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Entrar na sua conta</h1>
-        <form class="login-form" id="loginForm" autocomplete="off">
-            <div class="form-group">
-                <label for="username">Nome de Usuário</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <p class="message" id="errorMessage">Usuário ou senha incorretos. Tente novamente.</p>
-            <button type="submit" class="login-button">Entrar</button>
-            <p class="hint">© 2025 - Ferramenta criada por  <strong>joao</strong> / joao.sousa.martins@icloud.com</p>
-        </form>
+
+<div class="container">
+  <h1>Pesquisar Linha Carris Metropolitana</h1>
+
+  <div class="search-container">
+    <p>Insira o ID da linha da Carris Metropolitana:</p>
+    <div class="search-bar">
+      <input type="text" id="linha" placeholder="Ex: 1105, 1720, 3101">
+      <button onclick="buscarLinha()">Buscar</button>
     </div>
+  </div>
 
-    <script>
-        // Lista fixa de usuários (o método mais simples)
-        const users = [
-            { username: 'joao', password: '1437' },
-            { username: 'adriano', password: '1563' },
-            { username: '2025', password: '2026' },
-            { username: 'filipe', password: '1442' }
-        ];
+  <div id="line-info-card" class="line-info-card"></div>
 
-        const targetPage = 'rotas.html'; // página destino
+  <div id="patterns"></div>
+  
+  <div id="map">
+    <div class="map-buttons">
+      <button onclick="mudarMapa('map')">Mapa</button>
+      <button onclick="mudarMapa('satellite')">Satélite</button>
+    </div>
+  </div>
+</div>
 
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+<script src="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.css" rel="stylesheet" />
 
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
+<script>
+let map = L.map('map').setView([38.7, -9.2], 12);
 
-            // Procura o utilizador na lista
-            const found = users.find(u => u.username === username && u.password === password);
+const streets = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=KsU9dgYjpIH2SXzcBfrX', { attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors' }).addTo(map);
+const satellite = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=KsU9dgYjpIH2SXzcBfrX', { attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors' });
 
-            if (found) {
-                // Guarda o utilizador logado no sessionStorage (apenas para a sessão atual)
-                sessionStorage.setItem('loggedUser', username);
-                // Redireciona para a página de rotas
-                window.location.href = targetPage;
-            } else {
-                // Mostra mensagem de erro
-                errorMessage.style.display = 'block';
-                // Oculta a mensagem ao inserir algo novo
-                setTimeout(() => {
-                    const inputs = [document.getElementById('username'), document.getElementById('password')];
-                    inputs.forEach(i => i.addEventListener('input', () => { errorMessage.style.display = 'none'; }));
-                }, 0);
-            }
-        });
+function mudarMapa(tipo) {
+  if(tipo === 'map'){ map.addLayer(streets); map.removeLayer(satellite); }
+  else { map.addLayer(satellite); map.removeLayer(streets); }
+}
 
-        // Se já estiver logado, redireciona direto (opcional)
-        (function redirectIfAlreadyLogged() {
-            const logged = sessionStorage.getItem('loggedUser');
-            if (logged) {
-                // Descomenta a linha abaixo se quiseres que usuários já logados sejam automaticamente enviados a rotas.html
-                // window.location.href = targetPage;
-            }
-        })();
-    </script>
+let polyline, decorator;
+
+async function buscarLinha() {
+  const numero = document.getElementById("linha").value.trim();
+  const patternsDiv = document.getElementById("patterns");
+  const lineInfoCard = document.getElementById('line-info-card');
+
+  lineInfoCard.style.display = 'none';
+  lineInfoCard.innerHTML = '';
+  patternsDiv.innerHTML = "<p>A carregar...</p>";
+
+  try {
+    const res = await fetch("https://api.carrismetropolitana.pt/v2/lines");
+    const data = await res.json();
+    const linhas = Array.isArray(data) ? data : data.data;
+    const linha = linhas.find(l => l.id === numero);
+
+    if (!linha) {
+      patternsDiv.innerHTML = `<p>Nenhuma linha encontrada com o ID ${numero}</p>`;
+      return;
+    }
+
+    if (linha.long_name) {
+        lineInfoCard.innerHTML = `<strong>Linha:</strong> ${linha.long_name}`;
+        lineInfoCard.style.display = 'block';
+    }
+
+    if (!linha.pattern_ids || linha.pattern_ids.length === 0) {
+      patternsDiv.innerHTML = "<p>Nenhum percurso encontrado para esta linha.</p>";
+      return;
+    }
+
+    patternsDiv.innerHTML = "";
+
+    for (const pid of linha.pattern_ids) {
+      const resPat = await fetch(`https://api.carrismetropolitana.pt/v2/patterns/${pid}`);
+      const dataPat = await resPat.json();
+      const p = Array.isArray(dataPat) ? dataPat[0] : dataPat;
+      
+      const div = document.createElement("div");
+      div.className = "pattern-box";
+
+      const destino = p.headsign || p.long_name || "Destino desconhecido";
+      div.innerHTML = `<span>Destino: ${destino}</span><button class="gpx-btn">⬇️ Baixar GPX</button>`;
+
+      div.onclick = () => mostrarShape(p);
+
+      const gpxButton = div.querySelector('.gpx-btn');
+      gpxButton.onclick = (event) => {
+        event.stopPropagation();
+        baixarGPX(p.shape_id, destino);
+      };
+
+      patternsDiv.appendChild(div);
+    }
+  } catch(err) {
+    patternsDiv.innerHTML = `<p>Erro ao carregar dados: ${err.message}</p>`;
+  }
+}
+
+async function mostrarShape(pattern) {
+  try {
+    const res = await fetch(`https://api.carrismetropolitana.pt/v2/shapes/${pattern.shape_id}`);
+    const data = await res.json();
+    const coords = data.geojson.geometry.coordinates.map(c => [c[1], c[0]]);
+    if (polyline) map.removeLayer(polyline);
+    if (decorator) map.removeLayer(decorator);
+    polyline = L.polyline(coords, { color: '#E30613', weight: 6, opacity: 0.9 }).addTo(map);
+    decorator = L.polylineDecorator(polyline, {
+      patterns: [{ offset: 15, repeat: 50, symbol: L.Symbol.arrowHead({ pixelSize: 8, polygon: false, pathOptions: { stroke: true, color: 'black', weight: 3, opacity: 0.9 }})}]
+    }).addTo(map);
+    map.fitBounds(polyline.getBounds());
+  } catch(err) { alert("Erro ao buscar o traçado: " + err.message); }
+}
+
+async function baixarGPX(shapeId, nome) {
+  try {
+    const nomeSeguro = nome.replace(/[^a-z0-9\-_\.]/gi, '_');
+    const res = await fetch(`https://api.carrismetropolitana.pt/v2/shapes/${shapeId}`);
+    const data = await res.json();
+    const coords = data.geojson.geometry.coordinates.map(c => [c[1], c[0]]);
+    
+    let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="CarrisGPX" xmlns="http://www.topografix.com/GPX/1/1">
+<trk><name>${nome}</name><trkseg>\n`;
+    
+    coords.forEach(c => gpx += `  <trkpt lat="${c[0]}" lon="${c[1]}"></trkpt>\n`);
+    gpx += `</trkseg></trk></gpx>`;
+    
+    const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${nomeSeguro}.gpx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch(err) { alert("Erro ao gerar GPX: " + err.message); }
+}
+</script>
+
 </body>
 </html>
