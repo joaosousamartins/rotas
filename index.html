@@ -1,393 +1,443 @@
 <!DOCTYPE html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rotas Carris Metropolitana</title>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://carrismetropolitana.pt/wp-content/themes/carrismetropolitana/images/favicon/favicon-32x32.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carris Metropolitana Route Viewer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    
+    <!-- Leaflet Polyline Decorator for arrows -->
+    <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
 
-<!-- Fonts e ícones -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=my_location" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=flag_2" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+    <!-- Google Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
 <style>
-:root {
-  --primary-color: #007bff;
-  --primary-hover-color: #0056b3;
-  --secondary-color: #ffdd00;
-  --success-color: #28a745;
-  --success-hover-color: #218838;
-  --background-color: #f0f2f5;
-  --card-background-color: #ffffff;
-  --text-color: #333;
-  --text-light-color: #6c757d;
-  --border-color: #dee2e6;
-  --border-radius: 12px;
-  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-  --font-family: 'Inter', sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-family);
-  background: var(--background-color);
-  color: var(--text-color);
-  padding: 20px 15px;
-  line-height: 1.6;
-}
-
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: var(--text-color);
-  font-weight: 700;
-  font-size: 2.25rem;
-}
-
-.search-container {
-  background: var(--card-background-color);
-  padding: 30px;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  margin-bottom: 30px;
-}
-
-.search-container p {
-  text-align: center;
-  color: var(--text-light-color);
-  margin-bottom: 20px;
-}
-
-.search-bar {
-  display: flex;
-  gap: 15px;
-}
-
-#linha {
-  flex-grow: 1;
-  padding: 12px 15px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-#linha:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s ease-in-out;
-}
-
-button:hover {
-  background: var(--primary-hover-color);
-}
-
-.line-info-card {
-    display: none;
-    background: var(--card-background-color);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    text-align: center;
-    border-left: 5px solid var(--primary-color);
-    box-shadow: var(--box-shadow);
-}
-
-#patterns {
-  display: grid;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.pattern-box {
-  background: var(--card-background-color);
-  border: 1px solid var(--border-color);
-  border-left: 5px solid var(--secondary-color);
-  border-radius: 8px;
-  padding: 20px;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.pattern-box:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--box-shadow);
-}
-
-.pattern-box span {
-    flex-grow: 1;
-}
-
-.gpx-btn {
-  background: var(--success-color);
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.gpx-btn:hover {
-    background: var(--success-hover-color);
-}
-
-#map {
-  height: 500px;
-  width: 100%;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  border: 1px solid var(--border-color);
-  position: relative;
-  overflow: hidden;
-}
-
-.map-buttons {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-  display: flex;
-  gap: 5px;
-}
-
-.map-buttons button {
-  background: var(--card-background-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.map-buttons button:hover {
-    background: #f8f9fa;
-    color: var(--text-color);
-}
-
-
-/* --- CSS OTIMIZADO PARA TELEMÓVEIS --- */
-@media (max-width: 600px) {
   body {
-    padding: 15px 10px;
+    font-family: sans-serif;
   }
-  h1 {
-    font-size: 1.8rem;
-    margin-bottom: 25px;
+  .leaflet-div-icon-transparent {
+    background-color: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .search-container {
-    padding: 20px;
-    margin-bottom: 25px;
-  }
-  .search-bar {
-    flex-direction: column;
-  }
-
-  /* Card de informação da linha mais compacto */
-  .line-info-card {
-    padding: 15px;
-    font-size: 1rem;
-    margin-bottom: 25px;
-  }
-
-  /* Cards de destino mais compactos */
-  .pattern-box {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    padding: 15px;
-    font-size: 0.95rem;
-  }
-  
-  /* Botão de download ajustado */
-  .gpx-btn {
-      align-self: flex-end;
-      padding: 7px 12px;
-      font-size: 0.8rem;
-  }
-
-  /* Mapa em destaque, com altura fixa para ser o elemento principal */
-  #map {
-    height: 350px;
-  }
-}
 </style>
 </head>
-<body>
+  <body class="bg-gray-50 text-gray-800">
+    <div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
+      <div class="max-w-4xl mx-auto">
+        
+        <header class="text-center mb-8">
+          <div class="flex items-center justify-center gap-4 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 7.14a2.92 2.92 0 0 0-2.12-.84H7.22a2.92 2.92 0 0 0-2.12.84L3 12v5a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a2 2 0 0 0 2-2v-5l-2.1-4.86ZM7.5 16a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM5 11l1.5-3.5h11L19 11Z"/></svg>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+              ROTAS GPX
+            </h1>
+          </div>
+          <p class="text-gray-600">Explore e baixe os percursos das linhas de autocarro.</p>
+        </header>
 
-<div class="container">
-  <h1>Pesquisar Linha Carris Metropolitana</h1>
+        <main>
+          <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8">
+            <label for="line-search" class="block text-sm font-medium text-gray-700 mb-2">
+              Insira o código da linha que pretende pesquisar
+            </label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-grow">
+                <input
+                  id="line-search"
+                  type="text"
+                  placeholder="Ex: 1105, 1720, 3101"
+                  class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                />
+              </div>
+              <button
+                id="search-button"
+                class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+              >
+                <!-- Button content is set by JS -->
+              </button>
+            </div>
+          </div>
+          
+          <div id="error-container" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6" role="alert">
+            <p class="font-bold">Erro</p>
+            <p id="error-message"></p>
+          </div>
+          
+          <div id="line-info-container" class="hidden bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md mb-6 shadow">
+            <p id="line-info-name" class="font-semibold text-lg"></p>
+          </div>
 
-  <div class="search-container">
-    <p>Insira o ID da linha da Carris Metropolitana:</p>
-    <div class="search-bar">
-      <input type="text" id="linha" placeholder="Ex: 1105, 1720, 3101">
-      <button onclick="buscarLinha()">Buscar</button>
+          <div id="patterns-container" class="grid grid-cols-1 gap-4 mb-8">
+            <!-- Pattern cards will be inserted here by JS -->
+          </div>
+          
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+             <div class="relative h-[500px] w-full">
+                <div id="map-container" class="h-full w-full"></div>
+                <div class="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
+                    <button id="street-layer-button" class="flex items-center gap-2 p-2 rounded-lg shadow-lg bg-blue-600 text-white" title="Mapa">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13v-6m0-6V4m0 6L21 7v10l-6-3m6 3V7" /></svg>
+                    </button>
+                    <button id="satellite-layer-button" class="flex items-center gap-2 p-2 rounded-lg shadow-lg bg-white text-gray-700 hover:bg-gray-100" title="Satélite">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.8 14.56l.245.245a.5.5 0 00.707 0l.245-.245M15.8 14.56l.245.245a.5.5 0 00.707 0l.245-.245M12 21a9 9 0 100-18 9 9 0 000 18z" /></svg>
+                    </button>
+                </div>
+            </div>
+          </div>
+
+        </main>
+      </div>
     </div>
-  </div>
-
-  <div id="line-info-card" class="line-info-card"></div>
-
-  <div id="patterns"></div>
-  
-  <div id="map">
-    <div class="map-buttons">
-      <button onclick="mudarMapa('map')">Mapa</button>
-      <button onclick="mudarMapa('satellite')">Satélite</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.js"></script>
-<link href="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.css" rel="stylesheet" />
-
-<script>
-let map = L.map('map').setView([38.7, -9.2], 12);
-
-const streets = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=KsU9dgYjpIH2SXzcBfrX', { attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors' }).addTo(map);
-const satellite = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=KsU9dgYjpIH2SXzcBfrX', { attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors' });
-
-function mudarMapa(tipo) {
-  if(tipo === 'map'){ map.addLayer(streets); map.removeLayer(satellite); }
-  else { map.addLayer(satellite); map.removeLayer(streets); }
-}
-
-let polyline, decorator;
-
-async function buscarLinha() {
-  const numero = document.getElementById("linha").value.trim();
-  const patternsDiv = document.getElementById("patterns");
-  const lineInfoCard = document.getElementById('line-info-card');
-
-  lineInfoCard.style.display = 'none';
-  lineInfoCard.innerHTML = '';
-  patternsDiv.innerHTML = "<p>A carregar...</p>";
-
-  try {
-    const res = await fetch("https://api.carrismetropolitana.pt/v2/lines");
-    const data = await res.json();
-    const linhas = Array.isArray(data) ? data : data.data;
-    const linha = linhas.find(l => l.id === numero);
-
-    if (!linha) {
-      patternsDiv.innerHTML = `<p>Nenhuma linha encontrada com o ID ${numero}</p>`;
-      return;
-    }
-
-    if (linha.long_name) {
-        lineInfoCard.innerHTML = `<strong>Linha:</strong> ${linha.long_name}`;
-        lineInfoCard.style.display = 'block';
-    }
-
-    if (!linha.pattern_ids || linha.pattern_ids.length === 0) {
-      patternsDiv.innerHTML = "<p>Nenhum percurso encontrado para esta linha.</p>";
-      return;
-    }
-
-    patternsDiv.innerHTML = "";
-
-    for (const pid of linha.pattern_ids) {
-      const resPat = await fetch(`https://api.carrismetropolitana.pt/v2/patterns/${pid}`);
-      const dataPat = await resPat.json();
-      const p = Array.isArray(dataPat) ? dataPat[0] : dataPat;
-      
-      const div = document.createElement("div");
-      div.className = "pattern-box";
-
-      const destino = p.headsign || p.long_name || "Destino desconhecido";
-      div.innerHTML = `<span>Destino: ${destino}</span><button class="gpx-btn">⬇️ Baixar GPX</button>`;
-
-      div.onclick = () => mostrarShape(p);
-
-      const gpxButton = div.querySelector('.gpx-btn');
-      gpxButton.onclick = (event) => {
-        event.stopPropagation();
-        baixarGPX(p.shape_id, destino);
+    <script>
+      // --- ICONS ---
+      const ICONS = {
+        search: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>`,
+        loader: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>`,
+        download: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>`,
       };
 
-      patternsDiv.appendChild(div);
-    }
-  } catch(err) {
-    patternsDiv.innerHTML = `<p>Erro ao carregar dados: ${err.message}</p>`;
-  }
-}
+      // --- API ---
+      const API_BASE_URL = 'https://api.carrismetropolitana.pt/v2';
+      async function apiFetch(endpoint) {
+        try {
+          const response = await fetch(`${API_BASE_URL}${endpoint}`);
+          if (!response.ok) {
+            throw new Error(`API error: ${response.statusText}`);
+          }
+          const data = await response.json();
+          return data.data || data;
+        } catch (error) {
+          console.error(`Failed to fetch from ${endpoint}:`, error);
+          throw new Error('Falha ao comunicar com a API da Carris Metropolitana.');
+        }
+      }
 
-async function mostrarShape(pattern) {
-  try {
-    const res = await fetch(`https://api.carrismetropolitana.pt/v2/shapes/${pattern.shape_id}`);
-    const data = await res.json();
-    const coords = data.geojson.geometry.coordinates.map(c => [c[1], c[0]]);
-    if (polyline) map.removeLayer(polyline);
-    if (decorator) map.removeLayer(decorator);
-    polyline = L.polyline(coords, { color: '#E30613', weight: 6, opacity: 0.9 }).addTo(map);
-    decorator = L.polylineDecorator(polyline, {
-      patterns: [{ offset: 15, repeat: 50, symbol: L.Symbol.arrowHead({ pixelSize: 8, polygon: false, pathOptions: { stroke: true, color: 'black', weight: 3, opacity: 0.9 }})}]
-    }).addTo(map);
-    map.fitBounds(polyline.getBounds());
-  } catch(err) { alert("Erro ao buscar o traçado: " + err.message); }
-}
+      const fetchLines = () => apiFetch('/lines');
+      const fetchPattern = async (id) => {
+          const data = await apiFetch(`/patterns/${id}`);
+          if (Array.isArray(data)) {
+              if (data.length === 0) {
+                  throw new Error(`Pattern with ID ${id} not found.`);
+              }
+              return data[0];
+          }
+          return data;
+      };
+      const fetchShape = (id) => apiFetch(`/shapes/${id}`);
+      const downloadGpx = (coords, name) => {
+          const safeName = name.replace(/[^a-z0-9\-_\.]/gi, '_');
+          
+          let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="CarrisRotas" xmlns="http://www.topografix.com/GPX/1/1">
+<trk><name>${name}</name><trkseg>\n`;
+          
+          coords.forEach(c => {
+              gpxContent += `  <trkpt lat="${c[0]}" lon="${c[1]}"></trkpt>\n`;
+          });
+          
+          gpxContent += `</trkseg></trk></gpx>`;
+          
+          const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+          const url = URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${safeName}.gpx`;
+          document.body.appendChild(a);
+          a.click();
+          
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+      };
 
-async function baixarGPX(shapeId, nome) {
-  try {
-    const nomeSeguro = nome.replace(/[^a-z0-9\-_\.]/gi, '_');
-    const res = await fetch(`https://api.carrismetropolitana.pt/v2/shapes/${shapeId}`);
-    const data = await res.json();
-    const coords = data.geojson.geometry.coordinates.map(c => [c[1], c[0]]);
-    
-    let gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="CarrisGPX" xmlns="http://www.topografix.com/GPX/1/1">
-<trk><name>${nome}</name><trkseg>\n`;
-    
-    coords.forEach(c => gpx += `  <trkpt lat="${c[0]}" lon="${c[1]}"></trkpt>\n`);
-    gpx += `</trkseg></trk></gpx>`;
-    
-    const blob = new Blob([gpx], { type: 'application/gpx+xml' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${nomeSeguro}.gpx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-  } catch(err) { alert("Erro ao gerar GPX: " + err.message); }
-}
-</script>
 
-</body>
+      // --- MAP ---
+      let mapInstance;
+      let polylineRef;
+      let decoratorRef;
+      const tileLayers = { street: null, satellite: null };
+
+      const updateDecorator = () => {
+          if (!mapInstance || !decoratorRef) return;
+
+          const zoom = mapInstance.getZoom();
+          let pixelSize, repeat;
+
+          if (zoom < 13) { pixelSize = 16; repeat = '200px'; } 
+          else if (zoom < 15) { pixelSize = 18; repeat = '150px'; } 
+          else if (zoom < 17) { pixelSize = 20; repeat = '100px'; } 
+          else { pixelSize = 22; repeat = '75px'; }
+
+          decoratorRef.setPatterns([
+            {
+              offset: '1%',
+              repeat: repeat,
+              symbol: L.Symbol.marker({
+                rotate: true,
+                markerOptions: {
+                  icon: L.divIcon({
+                    html: `<span class="material-symbols-outlined" style="font-size: ${pixelSize}px; color: #FFFFFF; text-shadow: 0 0 4px rgba(0,0,0,0.8);">keyboard_double_arrow_up</span>`,
+                    className: 'leaflet-div-icon-transparent',
+                    iconSize: [pixelSize, pixelSize],
+                    iconAnchor: [pixelSize / 2, pixelSize / 2],
+                  }),
+                },
+              }),
+            },
+          ]);
+      };
+
+      function initMap(containerId) {
+          const map = L.map(containerId, {
+              center: [38.736946, -9.142685], // Lisbon center
+              zoom: 12,
+          });
+          
+          tileLayers.street = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=KsU9dgYjpIH2SXzcBfrX', {
+              attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors',
+          }).addTo(map);
+
+          tileLayers.satellite = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=KsU9dgYjpIH2SXzcBfrX', {
+              attribution: 'Map tiles by MapTiler, © OpenStreetMap contributors',
+          });
+
+          map.on('zoomend', updateDecorator);
+          return map;
+      }
+
+      function updateMapRoute(coords) {
+          if (!mapInstance) return;
+
+          if (polylineRef) mapInstance.removeLayer(polylineRef);
+          if (decoratorRef) mapInstance.removeLayer(decoratorRef);
+
+          polylineRef = L.polyline(coords, { 
+              color: '#DC2626', weight: 6, opacity: 0.85 
+          }).addTo(mapInstance);
+            
+          decoratorRef = L.polylineDecorator(polylineRef).addTo(mapInstance);
+          
+          updateDecorator();
+
+          mapInstance.fitBounds(polylineRef.getBounds(), { padding: [30, 30] });
+      }
+
+      // --- APP ---
+      document.addEventListener('DOMContentLoaded', () => {
+          // State
+          let lineInfo = null;
+          let patterns = [];
+          let selectedPatternId = null;
+          let isLoading = false;
+
+          // DOM Elements
+          const searchInput = document.getElementById('line-search');
+          const searchButton = document.getElementById('search-button');
+          const errorContainer = document.getElementById('error-container');
+          const errorMessageEl = document.getElementById('error-message');
+          const lineInfoContainer = document.getElementById('line-info-container');
+          const lineInfoNameEl = document.getElementById('line-info-name');
+          const patternsContainer = document.getElementById('patterns-container');
+          const streetLayerButton = document.getElementById('street-layer-button');
+          const satelliteLayerButton = document.getElementById('satellite-layer-button');
+          
+          // Initialize
+          mapInstance = initMap('map-container');
+          setLoading(false);
+
+          // Event Listeners
+          searchButton.addEventListener('click', handleSearch);
+          searchInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleSearch());
+
+          streetLayerButton.addEventListener('click', () => switchLayer('street'));
+          satelliteLayerButton.addEventListener('click', () => switchLayer('satellite'));
+          
+          patternsContainer.addEventListener('click', (e) => {
+              const card = e.target.closest('.pattern-card');
+              if (!card) return;
+
+              const downloadBtn = e.target.closest('.download-gpx-btn');
+              const patternId = card.dataset.patternId;
+              const pattern = patterns.find(p => p.id === patternId);
+
+              if (downloadBtn) {
+                  e.stopPropagation();
+                  if (pattern) handleGpxDownload(pattern);
+              } else {
+                  if (pattern) handlePatternClick(pattern);
+              }
+          });
+
+          // --- UI Update Functions ---
+          function setLoading(loading) {
+              isLoading = loading;
+              searchInput.disabled = loading;
+              searchButton.disabled = loading;
+              if (loading) {
+                  searchButton.innerHTML = `${ICONS.loader} <span>A Pesquisar...</span>`;
+              } else {
+                  searchButton.innerHTML = `${ICONS.search} <span>Pesquisar</span>`;
+              }
+          }
+          
+          function renderPatterns() {
+              if (patterns.length > 0) {
+                  patternsContainer.innerHTML = patterns.map(pattern => {
+                      const isSelected = pattern.id === selectedPatternId;
+                      const destination = pattern.headsign || pattern.long_name || "Destino desconhecido";
+                      
+                      return `
+                      <div 
+                          class="pattern-card group rounded-xl border shadow-sm transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
+                            isSelected 
+                              ? 'bg-blue-50 border-blue-500 shadow-md' 
+                              : 'bg-white border-gray-200 hover:shadow-lg hover:border-blue-400'
+                          }"
+                          data-pattern-id="${pattern.id}"
+                      >
+                          <div class="p-5">
+                              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                  <div class="flex-grow">
+                                      <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Destino</p>
+                                      <p class="text-lg font-bold transition-colors ${
+                                          isSelected ? 'text-blue-800' : 'text-gray-800 group-hover:text-blue-700'
+                                      }">
+                                          ${destination}
+                                      </p>
+                                  </div>
+                                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                                      <button 
+                                          class="download-gpx-btn flex-1 sm:flex-none flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                          title="Baixar GPX"
+                                      >
+                                          ${ICONS.download}
+                                          <span>Baixar GPX</span>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>`;
+                  }).join('');
+              } else {
+                  patternsContainer.innerHTML = '';
+              }
+          }
+          
+          function displayError(message) {
+              errorMessageEl.textContent = message;
+              errorContainer.classList.remove('hidden');
+          }
+          
+          function clearError() {
+              errorContainer.classList.add('hidden');
+          }
+
+          function displayLineInfo() {
+              if (lineInfo) {
+                  lineInfoNameEl.textContent = lineInfo.long_name;
+                  lineInfoContainer.classList.remove('hidden');
+              } else {
+                  lineInfoContainer.classList.add('hidden');
+              }
+          }
+          
+          function switchLayer(layerName) {
+              if (!mapInstance) return;
+
+              if (layerName === 'street') {
+                  mapInstance.removeLayer(tileLayers.satellite);
+                  mapInstance.addLayer(tileLayers.street);
+                  streetLayerButton.className = 'flex items-center gap-2 p-2 rounded-lg shadow-lg bg-blue-600 text-white';
+                  satelliteLayerButton.className = 'flex items-center gap-2 p-2 rounded-lg shadow-lg bg-white text-gray-700 hover:bg-gray-100';
+              } else {
+                  mapInstance.removeLayer(tileLayers.street);
+                  mapInstance.addLayer(tileLayers.satellite);
+                  satelliteLayerButton.className = 'flex items-center gap-2 p-2 rounded-lg shadow-lg bg-blue-600 text-white';
+                  streetLayerButton.className = 'flex items-center gap-2 p-2 rounded-lg shadow-lg bg-white text-gray-700 hover:bg-gray-100';
+              }
+          }
+
+
+          // --- Handlers ---
+          async function handleSearch() {
+              const lineId = searchInput.value.trim();
+              if (!lineId) {
+                  displayError('Por favor, insira um ID de linha.');
+                  return;
+              }
+
+              setLoading(true);
+              clearError();
+              lineInfo = null;
+              patterns = [];
+              selectedPatternId = null;
+              displayLineInfo();
+              renderPatterns();
+
+              try {
+                  const allLines = await fetchLines();
+                  const foundLine = allLines.find((l) => l.id === lineId);
+
+                  if (!foundLine) {
+                      displayError(`Nenhuma linha encontrada com o ID ${lineId}`);
+                      return;
+                  }
+
+                  lineInfo = foundLine;
+                  displayLineInfo();
+
+                  if (foundLine.pattern_ids && foundLine.pattern_ids.length > 0) {
+                      const patternPromises = foundLine.pattern_ids.map((id) => fetchPattern(id));
+                      patterns = (await Promise.all(patternPromises)).filter(p => p !== null);
+                      renderPatterns();
+                  } else {
+                      displayError('Nenhum percurso encontrado para esta linha.');
+                  }
+              } catch (err) {
+                  displayError(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.');
+              } finally {
+                  setLoading(false);
+              }
+          }
+
+          async function handlePatternClick(pattern) {
+              selectedPatternId = pattern.id;
+              renderPatterns(); // Re-render to show selection
+              try {
+                  const shape = await fetchShape(pattern.shape_id);
+                  const coords = shape.geojson.geometry.coordinates.map((c) => [c[1], c[0]]);
+                  updateMapRoute(coords);
+              } catch (err) {
+                  displayError(err instanceof Error ? `Erro ao buscar o traçado: ${err.message}` : 'Erro desconhecido ao buscar traçado.');
+              }
+          }
+
+          async function handleGpxDownload(pattern) {
+              try {
+                  const shape = await fetchShape(pattern.shape_id);
+                  const coords = shape.geojson.geometry.coordinates.map((c) => [c[1], c[0]]);
+                  const destination = pattern.headsign || pattern.long_name || 'Destino Desconhecido';
+                  downloadGpx(coords, destination);
+              } catch (err) {
+                  displayError(err instanceof Error ? `Erro ao gerar GPX: ${err.message}` : 'Erro desconhecido ao gerar GPX.');
+              }
+          }
+      });
+    </script>
+  </body>
 </html>
