@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://carrismetropolitana.pt/wp-content/themes/carrismetropolitana/images/favicon/favicon-32x32.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPX ROUTE VIEWER</title>
+    <title>GPX Route Viewer</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,10 +44,10 @@
           <div class="flex items-center justify-center gap-4 mb-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 7.14a2.92 2.92 0 0 0-2.12-.84H7.22a2.92 2.92 0 0 0-2.12.84L3 12v5a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a2 2 0 0 0 2-2v-5l-2.1-4.86ZM7.5 16a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM5 11l1.5-3.5h11L19 11Z"/></svg>
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-              GPX ROUTE VIEWER
+              GPX Route Viewer
             </h1>
           </div>
-          <p class="text-gray-600">Explore e baixeos percursos das linhas de autocarro.</p>
+          <p class="text-gray-600">Explore os percursos das linhas de autocarro.</p>
         </header>
 
         <main>
@@ -99,8 +99,15 @@
                 </div>
             </div>
           </div>
-
         </main>
+        
+        <footer class="text-center py-6 mt-8 border-t border-gray-200">
+          <p class="text-sm text-gray-500">
+            aplicacao desenvolvida por 
+            <a href="mailto:joao.sousa.martins@icloud.com" class="text-blue-600 hover:underline">joao.sousa.martins@icloud.com</a>
+          </p>
+        </footer>
+
       </div>
     </div>
     <script>
@@ -140,7 +147,8 @@
       };
       const fetchShape = (id) => apiFetch(`/shapes/${id}`);
       const downloadGpx = (coords, name) => {
-          const safeName = name.replace(/[^a-z0-9\-_\.]/gi, '_');
+          // Replace only invalid filename characters, preserving accents and spaces
+          const safeName = name.replace(/[\\/:\*\?"<>\|]/g, '_');
           
           let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="CarrisRotas" xmlns="http://www.topografix.com/GPX/1/1">
@@ -322,7 +330,7 @@
                                   </div>
                                   <div class="flex items-center gap-2 w-full sm:w-auto">
                                       <button 
-                                          class="download-gpx-btn flex-1 sm:flex-none flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                          class="download-gpx-btn flex-1 sm:flex-none flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                           title="Baixar GPX"
                                       >
                                           ${ICONS.download}
@@ -428,11 +436,16 @@
           }
 
           async function handleGpxDownload(pattern) {
+              if (!lineInfo) {
+                  displayError('Informação da linha não encontrada para gerar o nome do arquivo.');
+                  return;
+              }
               try {
                   const shape = await fetchShape(pattern.shape_id);
                   const coords = shape.geojson.geometry.coordinates.map((c) => [c[1], c[0]]);
                   const destination = pattern.headsign || pattern.long_name || 'Destino Desconhecido';
-                  downloadGpx(coords, destination);
+                  const fileName = `${lineInfo.id} ${destination}`;
+                  downloadGpx(coords, fileName);
               } catch (err) {
                   displayError(err instanceof Error ? `Erro ao gerar GPX: ${err.message}` : 'Erro desconhecido ao gerar GPX.');
               }
@@ -440,5 +453,4 @@
       });
     </script>
   </body>
-  <p class="text-gray-600">Explore e baixeos percursos das linhas de autocarro.</p>
 </html>
